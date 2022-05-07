@@ -1,0 +1,61 @@
+version: "3"
+
+# LAMP環境(Linux+Apache+MySQL+PHP)
+# cf. https://tt-computing.com/docker-php8_0-lamp
+# 上記を元に、MySQL永続化、言語・タイムゾーン設定をプラス
+services:
+  # apache+php
+  myapp-web:
+    container_name: myapp-web
+    # ./myapp-web/Dockerfile でイメージをビルド
+    build:
+      context: ./myapp-web
+      dockerfile: Dockerfile
+    # myapp-db 起動後に myapp-web を起動
+    depends_on:
+      - myapp-db
+    environment:
+      - TZ=Asia/Tokyo
+      - LANG=ja_JP.UTF-8
+    # 80 番ポートを8080に割り当て
+    ports:
+      - "8080:80"
+    # ローカル の ./html フォルダを
+    # コンテナの /var/www/html にマウント
+    volumes:
+      # このdirの並びのhtmlディレクトリをapacheのDocumentRootにマウント
+      - "../html:/var/www/html"
+
+  # MySQL
+  myapp-db:
+    container_name: myapp-db
+    image: mysql:8.0
+    volumes:
+      # 初期データを投入するSQLが格納されているdir
+      - ./db/mysql_init:/docker-entrypoint-initdb.d
+      # 永続化するときにマウントするdir
+      - ./db/mysql_data:/var/lib/mysql
+    # LAMP環境のみで利用するならport指定は不要
+    ports:
+      - "3306:3306"
+    environment:
+      - TZ=Asia/Tokyo
+      - LANG=ja_JP.UTF-8
+      - MYSQL_DATABASE=sampledb
+      - MYSQL_USER=sampleuser
+      - MYSQL_PASSWORD=samplepasswd
+      - MYSQL_ROOT_PASSWORD=password
+
+  # phpMyAdmin
+  myapp-pma:
+    container_name: myapp-pma
+    image: phpmyadmin/phpmyadmin:5.0
+    depends_on:
+      - myapp-db
+    ports:
+      # 80 番ポートを8088に割り当て
+      - "8088:80"
+    environment:
+      PMA_HOST: myapp-db
+      PMA_USER: root
+      PMA_PASSWORD: password
