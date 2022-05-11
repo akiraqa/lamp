@@ -31,16 +31,16 @@ $header = getallheaders();
 foreach(array_keys($header) as $key) {
   error_log('HEAD: ' . $key . ': ' . $header[$key]);
 }
-// パスパラメータを扱うときは$_SERVER['REQUEST_URI']から取得する
+// パスパラメータを扱うときは$_SERVER['REQUEST_URI']を元に取得する
 
 $contents = NULL;
-// json形式の入力は$ret = json_decode($json)でパースする
-if (isset($header['Content-Type']) && substr($header['Content-Type'], 0, 16) == 'application/json') {
-  $json = file_get_contents("php://input"); // POSTでのデータ入力を受け取る
-  error_log('JSON_STRING: ' . $json);
-  $contents = json_decode($json, true);
-  error_log('JSON_REQ: ' . var_export($contents, true));
-}
+
+// POSTでのデータ入力を受け取る(json)
+$json = file_get_contents("php://input");
+error_log('JSON_STRING: ' . $json);
+$contents = json_decode($json, true);
+error_log('JSON_REQ: ' . var_export($contents, true));
+
 if (!is_array($contents)) {
   $contents = array();
 }

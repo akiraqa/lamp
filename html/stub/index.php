@@ -26,15 +26,15 @@ $header = getallheaders();
 foreach(array_keys($header) as $key) {
   echo 'HEAD: ' . $key . ': ' . $header[$key] . "<br/>\n";
 }
-// パスパラメータを扱うときは$_SERVER['REQUEST_URI']から取得する
+// パスパラメータを扱うときは$_SERVER['REQUEST_URI']を元に取得する
 
-// json形式の入力は$ret = json_decode($json)でパースする
-if (isset($header['Content-Type']) && substr($header['Content-Type'], 0, 16) == 'application/json') {
-  $json = file_get_contents("php://input"); // POSTでのデータ入力を受け取る
-  $contents = json_decode($json, true);
-  var_dump($contents);
-  error_log('JSON_REQ: ' . var_export($contents, true));
-}
+// POSTでのデータ入力を受け取る(json)
+$json = file_get_contents("php://input"); 
+echo 'BODY: ' . $json . "<br/>\n";
+$contents = json_decode($json, true);
+var_dump($contents);
+error_log('JSON_REQ: ' . var_export($contents, true));
+
 // 呼び出し側の例:
 // curl -X POST -H "Content-Type: application/json" -d '{"id":"1001", "name":"abc01"}' "http://localhost:8080/stub/a14"
 
